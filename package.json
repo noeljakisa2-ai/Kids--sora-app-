@@ -1,1 +1,9 @@
-{"type":"module","dependencies":{"node-fetch":"^3.3.2","googleapis":"^128.0.0"}}
+{
+  "name": "diablooon-auto-upload",
+  "version": "1.0.0",
+  "description": "DIABLOOON with locked characters Diablooon, Bello, Luna, Tico, Sky",
+  "main": "approve.js",
+  "dependencies": {
+    "googleapis": "^128.0.0"
+  }
+}
