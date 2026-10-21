@@ -1,26 +1,33 @@
 name: Build DIABLOOON APK
-on: workflow_dispatch
+on:
+  workflow_dispatch:
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
-        with: { node-version: '18' }
-      - run: npm install -g @capacitor/cli
-      - run: |
-          npm init -y
-          npm install @capacitor/core @capacitor/android
-          npx cap init "DIABLOOON Studio" "com.diablooon.studio" --web-dir=.
-          npx cap add android
-          npx cap copy
-      - uses: actions/setup-java@v3
-        with: { distribution: 'temurin', java-version: '17' }
-      - run: |
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+      - uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+      - name: Install Capacitor
+        run: npm install -g @capacitor/cli
+      - name: Init App
+        run: |
+          npm install @capacitor/core @capacitor/cli @capacitor/android
+          npx cap init "DIABLOOON Studio" com.diablooon.studio --web-dir=. || true
+          npx cap add android || true
+          npx cap copy android || true
+      - name: Build APK
+        run: |
           cd android
           chmod +x gradlew
           ./gradlew assembleDebug
-      - uses: actions/upload-artifact@v3
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
         with:
           name: DIABLOOON-APK
           path: android/app/build/outputs/apk/debug/app-debug.apk
