@@ -1,0 +1,27 @@
+name: DIABLOOON Upload (Manual Approval Required)
+on:
+  workflow_dispatch:
+    inputs:
+      confirm_publication:
+        description: "Type APPROVE to publish the prepared video publicly"
+        required: true
+        type: string
+jobs:
+  upload:
+    if: ${{ inputs.confirm_publication == 'APPROVE' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+      - run: npm install
+      - name: Verify video exists
+        run: test -s ./video.mp4
+      - name: Upload only after explicit approval
+        run: node approve.js
+        env:
+          PUBLISH_APPROVED: ${{ inputs.confirm_publication }}
+          YT_CLIENT_ID: ${{ secrets.YT_CLIENT_ID }}
+          YT_CLIENT_SECRET: ${{ secrets.YT_CLIENT_SECRET }}
+          YT_REFRESH_TOKEN: ${{ secrets.YT_REFRESH_TOKEN }}

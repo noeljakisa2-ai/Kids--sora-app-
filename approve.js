@@ -1,13 +1,25 @@
 const fs = require('fs');
 const { google } = require('googleapis');
 
-// SAFE - No secrets here, reads from GitHub Secrets
+// Fail closed: direct execution cannot publish unless the workflow/user explicitly approves.
+if (process.env.PUBLISH_APPROVED !== 'APPROVE') {
+  console.error('⛔ Publishing blocked. Explicit approval is required: set PUBLISH_APPROVED=APPROVE only after reviewing the video.');
+  process.exit(1);
+}
+
+// SAFE - credentials are read only from GitHub Secrets.
 const CLIENT_ID = process.env.YT_CLIENT_ID;
 const CLIENT_SECRET = process.env.YT_CLIENT_SECRET;
 const REFRESH_TOKEN = process.env.YT_REFRESH_TOKEN;
 
 if (!CLIENT_ID || !CLIENT_SECRET || !REFRESH_TOKEN) {
-  console.error('❌ Missing Secrets! Add in GitHub Settings -> Secrets');
+  console.error('❌ Missing YouTube secrets. Add them in GitHub Settings -> Secrets.');
+  process.exit(1);
+}
+
+const videoPath = './video.mp4';
+if (!fs.existsSync(videoPath) || fs.statSync(videoPath).size === 0) {
+  console.error('❌ video.mp4 is missing or empty. Nothing was uploaded.');
   process.exit(1);
 }
 
@@ -16,7 +28,6 @@ const oauth2Client = new google.auth.OAuth2(
   CLIENT_SECRET,
   'https://developers.google.com/oauthplayground'
 );
-
 oauth2Client.setCredentials({ refresh_token: REFRESH_TOKEN });
 const youtube = google.youtube({ version: 'v3', auth: oauth2Client });
 
@@ -26,10 +37,8 @@ const DIABLOOON_BRANDING = {
 };
 
 async function upload() {
-  const videoPath = './video.mp4';
   const thumbPath = './thumbnail.jpg';
-
-  console.log('🚀 Uploading DIABLOOON - Characters LOCKED...');
+  console.log('🚀 Explicit approval received. Uploading DIABLOOON video...');
 
   const res = await youtube.videos.insert({
     part: ['snippet,status'],
@@ -57,7 +66,7 @@ Adventure • Friendship • Kindness`,
 
   if (fs.existsSync(thumbPath)) {
     await youtube.thumbnails.set({
-      videoId: videoId,
+      videoId,
       media: { body: fs.createReadStream(thumbPath) }
     });
     console.log('✅ Thumbnail set with locked characters');
@@ -66,4 +75,5 @@ Adventure • Friendship • Kindness`,
 
 upload().catch(err => {
   console.error('❌ FAILED:', err.response?.data || err.message);
+  process.exitCode = 1;
 });
