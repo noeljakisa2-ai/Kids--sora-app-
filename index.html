@@ -1,1 +1,28 @@
-<!DOCTYPE html><html><head><meta name="viewport" content="width=device-width"><title>Sora Kids Studio</title><style>body{padding:12px;background:#FFF8E7;font-family:sans-serif}button{width:100%;padding:15px;border:none;border-radius:12px;margin:6px 0;font-weight:bold;color:white}input,textarea{width:100%;padding:12px;border-radius:10px;border:2px solid #FFD93D;box-sizing:border-box}video{width:100%;border-radius:12px;background:#000;margin-top:10px}</style></head><body><h2>🎬 Sora Kids 3D Studio</h2><input id="topic" value="brave baby turtle in jungle, pixar 3d"><textarea id="story" rows="4">A cute 3D Pixar baby turtle sees a rainbow, learns colors with friends.</textarea><button style="background:#FF6B6B" onclick="genImage()">1. Generate 3D Image</button><button style="background:#000" onclick="gen3DVideo()">🔥 2. Generate 3D VIDEO Like Sora</button><video id="v" controls muted loop playsinline></video><p id="s">Ready ✅ Token Connected</p><script>const HF_TOKEN="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";async function genImage(){const p=document.getElementById('topic').value;document.getElementById('s').innerText="⏳...";const url=`https://image.pollinations.ai/prompt/${encodeURIComponent('3d pixar cute '+p+', 8k')}?width=1280&height=720&nologo=true&seed=${Math.random()}`;document.getElementById('v').poster=url;document.getElementById('s').innerText="✅ Image Ready!";}async function gen3DVideo(){const p=document.getElementById('story').value;document.getElementById('s').innerText="⏳ Generating 3D video 45s...";const url=`https://image.pollinations.ai/prompt/${encodeURIComponent('3d pixar video smooth motion '+p)}?width=1280&height=720&nologo=true`;const blob=await fetch(url).then(r=>r.blob());document.getElementById('v').src=URL.createObjectURL(blob);document.getElementById('v').play();document.getElementById('s').innerText="✅ 3D VIDEO READY!";}</script></body></html>
+<!DOCTYPE html>
+<html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>DIABLOOON STUDIO</title><style>
+*{box-sizing:border-box;margin:0;padding:0;font-family:system-ui}
+body{background:#0f0f12;color:#fff;padding:14px}
+h1{text-align:center;margin:10px;font-size:20px}
+.card{background:#1c1c20;border-radius:16px;padding:14px;margin:10px 0;border:1px solid #2a2a30}
+.btn{width:100%;background:#FF6B35;border:none;border-radius:12px;padding:13px;font-weight:800;color:#000;margin-top:10px}
+input,select,textarea{width:100%;background:#0f0f12;border:1px solid #333;border-radius:10px;padding:11px;color:#fff;margin-top:6px}
+textarea{height:90px}.tag{background:#25252b;padding:8px;border-radius:8px;font-size:12px;margin-top:8px;white-space:pre-wrap}.preview{width:100%;border-radius:12px;margin-top:10px;display:none}
+</style></head><body>
+<h1>🐵 DIABLOOON STUDIO</h1>
+<p style="text-align:center;color:#aaa;font-size:12px">Faceless Kids Video Factory - Locked Characters</p>
+<div class="card"><h3>🔒 STEP 1 - Lock Characters</h3>
+<input type="file" id="charImg" accept="image/*"><img id="charPreview" class="preview">
+<div class="tag" id="lockPrompt">Upload original image to generate lock prompt. This keeps faces SAME forever.</div></div>
+<div class="card"><h3>📝 STEP 2 - Story</h3>
+<select id="topic"><option>Diablooon Learns to Share</option><option>Diablooon and the Lost Treasure</option><option>Diablooon Learns Colors</option><option>Diablooon Counts to 10</option><option>Diablooon Helps Friends</option></select>
+<button class="btn" onclick="genStory()">Generate Story + Prompts</button><textarea id="storyOut"></textarea></div>
+<div class="card"><h3>🎬 STEP 3 - Sora Prompts</h3><div id="soraPrompts"></div><button class="btn" onclick="copyPrompts()">Copy Prompts</button></div>
+<div class="card"><h3>📤 STEP 4 - YouTube</h3><input id="ytTitle" placeholder="Title"><textarea id="ytDesc" placeholder="Description"></textarea>
+<button class="btn" onclick="alert('Now: Generate video in Sora with prompts + original image, download as video.mp4, upload video.mp4 + thumbnail.jpg to GitHub root, then run Actions workflow!')">How to Upload</button></div>
+<script>
+const LOCKED=`LOCKED CHARACTERS - NEVER CHANGE FACES: Diablooon monkey RED cap, Bello elephant BLUE shirt, Luna rabbit PINK dress, Tico turtle GREEN glasses, Sky parrot YELLOW BLUE - SAME face every scene, 3D Pixar cartoon bright`;
+document.getElementById('charImg').addEventListener('change',e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=ev=>{const img=document.getElementById('charPreview');img.src=ev.target.result;img.style.display='block';document.getElementById('lockPrompt').innerText=LOCKED+' Use original image as reference!';};r.readAsDataURL(f);});
+function genStory(){const t=document.getElementById('topic').value;const s=`Title: ${t} - Scene1 wake, Scene2 problem bridge, Scene3 plan, Scene4 teamwork fix, Scene5 celebration. Moral: ${t}`;document.getElementById('storyOut').value=s;const p=[`Morning jungle ${LOCKED} sunrise`,`Broken bridge ${LOCKED} worried`,`Planning ${LOCKED} teamwork close up`,`Fixing ${LOCKED} working`,`Celebration ${LOCKED} confetti`];let h='';p.forEach((x,i)=>{h+=`<div class=tag><b>Prompt ${i+1}:</b> ${x}</div>`});document.getElementById('soraPrompts').innerHTML=h;window.soraList=p;document.getElementById('ytTitle').value=`${t} | DIABLOOON & Friends`;document.getElementById('ytDesc').value=s+' #Diablooon';}
+function copyPrompts(){if(!window.soraList)return alert('Generate first');navigator.clipboard.writeText(window.soraList.join('\n\n')).then(()=>alert('Copied! Paste in Sora with original image'));}
+</script></body></html>
