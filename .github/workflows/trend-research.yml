@@ -1,0 +1,26 @@
+name: DIABLOOON Trend Research (No Publishing)
+on:
+  workflow_dispatch:
+jobs:
+  research:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+      - run: npm install
+      - name: Research YouTube popularity signals and prepare an original concept
+        run: node agent.js
+        env:
+          YT_CLIENT_ID: ${{ secrets.YT_CLIENT_ID }}
+          YT_CLIENT_SECRET: ${{ secrets.YT_CLIENT_SECRET }}
+          YT_REFRESH_TOKEN: ${{ secrets.YT_REFRESH_TOKEN }}
+          TG_TOKEN: ${{ secrets.TG_TOKEN }}
+          TG_CHAT: ${{ secrets.TG_CHAT }}
+      - name: Save research output
+        uses: actions/upload-artifact@v4
+        with:
+          name: diablooon-trend-research
+          path: pending_video.json
+          if-no-files-found: error
