@@ -18,11 +18,11 @@
 </main>
 <script>
 const lessons=[
-{w:"Ena",m:"Friend",h:"EH-nah",s:"Ena!",t:"Hello, friend!"},
-{w:"Zha",m:"I / me",h:"zhah",s:"Zha luma no.",t:"I see you."},
-{w:"Shavi",m:"Love",h:"SHAH-vee",s:"Zha shavi no.",t:"I love you."},
-{w:"Mira",m:"Water",h:"MEE-rah",s:"No vami mira ke?",t:"Do you drink water?"},
-{w:"Veya",m:"Thank you",h:"VEH-yah",s:"Veya, ena!",t:"Thank you, friend!"}
+{w:"Ena",m:"Friend",h:"EH-nah",s:"Ena, zha shavi no eyo zha veki kelu.",t:"My friend, I love you and I am coming home."},
+{w:"Zha",m:"I / me",h:"zhah",s:"Zha sora kelu eyo zha luma no dara.",t:"I go home and I see you there."},
+{w:"Shavi",m:"Love",h:"SHAH-vee",s:"Zha shavi no, ena, eyo zha kiri no kada no moru.",t:"I love you, my friend, and I help you when you feel sad."},
+{w:"Mira",m:"Water",h:"MEE-rah",s:"No vami mira kada thalu bela eyo no veki kelu.",t:"You drink water when the sun is bright and you come home."},
+{w:"Veya",m:"Thank you",h:"VEH-yah",s:"Veya, ena, zha shavi no eyo zha deni no kiri zha.",t:"Thank you, friend; I love you and I know you help me."}
 ];
 const dictionary={
   "zha": "I / me",
@@ -386,7 +386,7 @@ for(const [w,m] of Object.entries(dictionary)){
 let index=0,slow=false;
 const $=id=>document.getElementById(id);
 function speak(text){if(!('speechSynthesis'in window)){ $('status').textContent='Speech synthesis is not supported in this browser.';return}speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(text);u.lang='en-US';u.rate=slow?.72:.9;u.pitch=1;u.onstart=()=>{$('status').textContent='Speaking…'};u.onend=()=>{$('status').textContent='Finished. Your turn!'};speechSynthesis.speak(u)}
-function render(autoSpeak=true){const l=lessons[index];$('lessonCount').textContent='LESSON '+(index+1)+' OF '+lessons.length;$('word').textContent=l.w;$('meaning').textContent=l.m;$('hint').textContent='Pronunciation guide: '+l.h;$('sentence').textContent=l.s;$('translation').textContent=l.t;$('bar').style.width=((index+1)/lessons.length*100)+'%';$('quizArea').innerHTML='';if(autoSpeak)speak(l.w)}
+function render(autoSpeak=true){const l=lessons[index];$('lessonCount').textContent='LESSON '+(index+1)+' OF '+lessons.length;$('word').textContent=l.w;$('meaning').textContent=l.m;$('hint').textContent='Pronunciation guide: '+l.h;$('sentence').textContent=l.s;$('translation').textContent=l.t;$('bar').style.width=((index+1)/lessons.length*100)+'%';$('quizArea').innerHTML='';if(autoSpeak){speak(l.w+'. '+l.s)}}
 $('listen').onclick=()=>speak(lessons[index].w);$('sentenceListen').onclick=()=>speak(lessons[index].s);$('slower').onclick=()=>{slow=!slow;$('slower').textContent=slow?'🐢 Slow mode: ON':'🐢 Slower';speak(lessons[index].w)};$('next').onclick=()=>{index=(index+1)%lessons.length;render(true)};$('prev').onclick=()=>{index=(index-1+lessons.length)%lessons.length;render(true)};
 $('say').onclick=()=>{const SR=window.SpeechRecognition||window.webkitSpeechRecognition;if(!SR){$('status').textContent='Speech recognition is not available here. Try Chrome on Android; you can still listen and practice manually.';return}const rec=new SR();rec.lang='en-US';rec.interimResults=false;rec.maxAlternatives=1;$('status').textContent='Listening… speak now.';rec.onresult=e=>{const said=e.results[0][0].transcript.toLowerCase();const target=lessons[index].w.toLowerCase();$('status').textContent='I heard: “'+said+'”. '+(said.includes(target)?'Nice work!':'Try once more, slowly.');};rec.onerror=e=>$('status').textContent='Microphone recognition issue ('+e.error+'). Check permission or try Chrome.';rec.start()};
 $('quiz').onclick=()=>{const l=lessons[index];$('quizArea').innerHTML='<p>What does <b>'+l.w+'</b> mean?</p><div class="row"><button data-a="'+l.m+'">'+l.m+'</button><button data-a="Mountain">Mountain</button><button data-a="Sleep">Sleep</button></div><div class="feedback" id="quizFeedback"></div>';[...$('quizArea').querySelectorAll('button')].forEach(b=>b.onclick=()=>{$('quizFeedback').textContent=b.dataset.a===l.m?'Correct! Great job.':'Not quite. It means '+l.m+'.'})};
