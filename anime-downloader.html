@@ -15,6 +15,13 @@ main{max-width:760px;margin:auto;padding:28px 16px 60px}.brand{display:flex;gap:
 <header class="brand"><div class="logo">ア</div><div><div class="eyebrow">NO ADS · NO SIGN-UP</div><h1>Anime Saver</h1></div></header>
 <p>Save anime videos you’re allowed to download, right to your device. Designed for mobile screens.</p>
 <section class="card">
+<h2>🔎 Find anime by name</h2>
+<p>Type a title to find matching anime pages. Copy a result link or search for official watch/download options.</p>
+<label for="animeQuery">Anime name</label><input id="animeQuery" type="search" placeholder="e.g. Naruto, One Piece" autocomplete="off">
+<div class="actions"><button id="searchAnime" type="button">Find anime</button></div>
+<div id="animeResults" class="status" aria-live="polite">Search by title to see matching anime pages.</div>
+</section>
+<section class="card">
 <h2>⬇️ Download a video</h2>
 <p>Paste a <b>direct video-file link</b> (such as an authorized MP4 or WebM link), or choose a video file you already have.</p>
 <label for="url">Direct video URL</label><input id="url" type="url" inputmode="url" placeholder="https://example.com/episode.mp4" autocomplete="url">
