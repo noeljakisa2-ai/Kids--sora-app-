@@ -379,6 +379,10 @@ const dictionary={
   "mira2": "deep",
   "pava2": "shallow"
 };
+const taughtWords=new Set(lessons.map(item=>item.w.toLowerCase()));
+for(const [w,m] of Object.entries(dictionary)){
+ if(!taughtWords.has(w.toLowerCase())) lessons.push({w,m,h:w,s:w,t:m});
+}
 let index=0,slow=false;
 const $=id=>document.getElementById(id);
 function speak(text){if(!('speechSynthesis'in window)){ $('status').textContent='Speech synthesis is not supported in this browser.';return}speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(text);u.lang='en-US';u.rate=slow?.72:.9;u.pitch=1;u.onstart=()=>{$('status').textContent='Speaking…'};u.onend=()=>{$('status').textContent='Finished. Your turn!'};speechSynthesis.speak(u)}
