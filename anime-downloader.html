@@ -43,4 +43,29 @@ $('download').addEventListener('click',async()=>{
 });
 $('open').addEventListener('click',()=>{let raw=$('url').value.trim();try{const u=new URL(raw);if(!['http:','https:'].includes(u.protocol))throw Error();window.open(u.href,'_blank','noopener,noreferrer');status.textContent='Opened the link in a new tab.'}catch{status.textContent='Enter a valid http or https link first.'}});
 $('savefile').addEventListener('click',()=>{const f=$('file').files[0];if(!f){status.textContent='Choose a video file first.';return}const url=URL.createObjectURL(f),a=document.createElement('a');a.href=url;a.download=safeName($('localname').value,f.name||'anime-video.mp4');document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);status.textContent='Save requested for '+f.name+'.'});
-</script></body></html>
+
+$('searchAnime').addEventListener('click',searchAnime);
+$('animeQuery').addEventListener('keydown',e=>{if(e.key==='Enter')searchAnime()});
+async function searchAnime(){
+ const q=$('animeQuery').value.trim(), box=$('animeResults');
+ if(!q){box.textContent='Type an anime name first.';return}
+ box.textContent='Searching anime titles…';
+ try{
+  const res=await fetch('https://api.jikan.moe/v4/anime?q='+encodeURIComponent(q)+'&limit=8&sfw=true');
+  if(!res.ok)throw Error('Search service temporarily unavailable ('+res.status+').');
+  const data=await res.json(), items=data.data||[];
+  if(!items.length){box.textContent='No matches found. Try a shorter or alternate title.';return}
+  box.textContent='';
+  for(const item of items){
+   const card=document.createElement('div');card.style.cssText='padding:12px 0;border-bottom:1px solid var(--line)';
+   const title=document.createElement('b');title.textContent=item.title_english||item.title||'Untitled anime';card.appendChild(title);
+   const meta=document.createElement('p');meta.className='small';meta.textContent=[item.type,item.year,item.episodes?item.episodes+' episodes':null].filter(Boolean).join(' · ');card.appendChild(meta);
+   const actions=document.createElement('div');actions.className='actions';
+   const page=document.createElement('a');page.className='btn secondary';page.href=item.url;page.target='_blank';page.rel='noopener noreferrer';page.textContent='Open anime page';actions.appendChild(page);
+   const copy=document.createElement('button');copy.type='button';copy.textContent='Copy page link';copy.addEventListener('click',async()=>{try{await navigator.clipboard.writeText(item.url);status.textContent='Anime page link copied: '+item.url}catch{const t=document.createElement('textarea');t.value=item.url;document.body.appendChild(t);t.select();const ok=document.execCommand('copy');t.remove();status.textContent=ok?'Anime page link copied.':'Copy failed. Open the anime page and copy its address.'}});actions.appendChild(copy);
+   const find=document.createElement('a');find.className='btn';find.href='https://www.google.com/search?q='+encodeURIComponent((item.title_english||item.title)+' official streaming download');find.target='_blank';find.rel='noopener noreferrer';find.textContent='Find watch options';actions.appendChild(find);
+   card.appendChild(actions);box.appendChild(card);
+  }
+ }catch(err){box.textContent='Could not search right now. Check your internet connection and try again. '+err.message}
+}
+\n</script></body></html>
