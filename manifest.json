@@ -1,0 +1,10 @@
+{
+  "name": "Zhakori Teacher",
+  "short_name": "Zhakori",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#10172b",
+  "theme_color": "#10172b",
+  "description": "Offline Zhakori language learning with speech"
+}
