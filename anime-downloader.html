@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#10111c">
+<title>Anime Saver — Ad-free</title>
+<style>
+:root{color-scheme:dark;--bg:#10111c;--panel:#1b1d2d;--ink:#f5f5ff;--muted:#aeb1ca;--accent:#a78bfa;--line:#34364e}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at top,#292044,var(--bg) 55%);color:var(--ink);font:16px system-ui,-apple-system,Segoe UI,sans-serif;min-height:100vh}
+main{max-width:760px;margin:auto;padding:28px 16px 60px}.brand{display:flex;gap:12px;align-items:center;margin-bottom:28px}.logo{display:grid;place-items:center;width:48px;height:48px;border-radius:15px;background:var(--accent);color:#171225;font-size:25px;font-weight:900}.eyebrow{color:var(--accent);font-size:12px;letter-spacing:.16em;font-weight:800}h1{font-size:clamp(28px,6vw,42px);line-height:1.08;margin:5px 0}p{color:var(--muted);line-height:1.55}.card{background:rgba(27,29,45,.96);border:1px solid var(--line);border-radius:20px;padding:20px;margin:18px 0;box-shadow:0 12px 32px #0002}label{display:block;font-weight:700;margin:15px 0 8px}input{width:100%;padding:14px;border-radius:12px;border:1px solid #4a4d68;background:#111321;color:var(--ink);font:inherit;outline:none}input:focus{border-color:var(--accent)}button,.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:0;border-radius:12px;padding:13px 17px;background:var(--accent);color:#171225;font:700 15px system-ui;text-decoration:none;cursor:pointer;min-height:46px}button:disabled{opacity:.45;cursor:not-allowed}.actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:14px}.secondary{background:#30334b;color:var(--ink)}.status{margin-top:14px;padding:12px;border-radius:10px;background:#111321;color:var(--muted);overflow-wrap:anywhere}.small{font-size:13px}.warning{border-left:3px solid #fbbf24;padding-left:12px}.features{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px}.feature{background:#111321;border-radius:12px;padding:13px}.feature b{display:block;margin-bottom:5px}.hidden{display:none}footer{color:var(--muted);font-size:12px;text-align:center;margin-top:30px}
+</style>
+</head>
+<body><main>
+<header class="brand"><div class="logo">ア</div><div><div class="eyebrow">NO ADS · NO SIGN-UP</div><h1>Anime Saver</h1></div></header>
+<p>Save anime videos you’re allowed to download, right to your device. Designed for mobile screens.</p>
+<section class="card">
+<h2>⬇️ Download a video</h2>
+<p>Paste a <b>direct video-file link</b> (such as an authorized MP4 or WebM link), or choose a video file you already have.</p>
+<label for="url">Direct video URL</label><input id="url" type="url" inputmode="url" placeholder="https://example.com/episode.mp4" autocomplete="url">
+<label for="filename">Save as (optional)</label><input id="filename" type="text" placeholder="my-anime-episode.mp4" maxlength="100">
+<div class="actions"><button id="download">Download video</button><button id="open" class="secondary" type="button">Open source page</button></div>
+<div id="status" class="status" role="status" aria-live="polite">Ready. No ads, tracking scripts, or account required.</div>
+</section>
+<section class="card"><h2>📱 Download a file you already have</h2><p>Choose a video from your phone to save a copy with a filename you choose.</p>
+<label for="file">Choose video</label><input id="file" type="file" accept="video/*,.mkv">
+<label for="localname">Filename</label><input id="localname" type="text" placeholder="anime-episode.mp4" maxlength="100">
+<div class="actions"><button id="savefile" type="button">Save selected video</button></div>
+</section>
+<section class="card"><h2>Built for straightforward use</h2><div class="features"><div class="feature"><b>🚫 Ad-free</b><span class="small">This app contains no ad placements.</span></div><div class="feature"><b>📲 Mobile-first</b><span class="small">Simple controls for Android browsers.</span></div><div class="feature"><b>🔒 Private</b><span class="small">No account or app-side tracking.</span></div></div>
+<p class="small warning">Important: a page link is not the same as a video-file link. Many anime streaming sites use protected players, DRM, or access restrictions. This app does not bypass those protections or extract copyrighted streams; use official download options or videos you have permission to save.</p></section>
+<footer>Anime Saver · Free to use · No ads</footer>
+</main>
+<script>
+const $=id=>document.getElementById(id), status=$('status');
+function safeName(value,fallback){let n=(value||'').trim().replace(/[\\/:*?"<>|\x00-\x1f]/g,'-').replace(/\s+/g,' ').slice(0,100);return n||fallback}
+$('download').addEventListener('click',async()=>{
+ let raw=$('url').value.trim(); if(!raw){status.textContent='Paste a direct video URL first.';return}
+ let u;try{u=new URL(raw);if(!['http:','https:'].includes(u.protocol))throw Error()}catch{status.textContent='Enter a valid http or https URL.';return}
+ if(!/\.(mp4|webm|mov|m4v|ogv)(?:$|[?#])/i.test(u.href)){status.textContent='This does not look like a direct video-file link. Open the source page and use its official download option, or paste an authorized direct MP4/WebM link.';return}
+ const a=document.createElement('a');a.href=u.href;a.download=safeName($('filename').value,u.pathname.split('/').pop()||'anime-video.mp4');a.rel='noopener';document.body.appendChild(a);a.click();a.remove();
+ status.textContent='Download requested. If the browser opens the video instead, the source may not allow cross-site downloads; use its official download control.';
+});
+$('open').addEventListener('click',()=>{let raw=$('url').value.trim();try{const u=new URL(raw);if(!['http:','https:'].includes(u.protocol))throw Error();window.open(u.href,'_blank','noopener,noreferrer');status.textContent='Opened the link in a new tab.'}catch{status.textContent='Enter a valid http or https link first.'}});
+$('savefile').addEventListener('click',()=>{const f=$('file').files[0];if(!f){status.textContent='Choose a video file first.';return}const url=URL.createObjectURL(f),a=document.createElement('a');a.href=url;a.download=safeName($('localname').value,f.name||'anime-video.mp4');document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);status.textContent='Save requested for '+f.name+'.'});
+</script></body></html>
