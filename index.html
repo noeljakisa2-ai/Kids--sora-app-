@@ -10,7 +10,7 @@
 <body><main class="wrap">
 <header class="top"><div class="logo">🔊</div><div><div class="tag">YOUR PERSONAL LANGUAGE COACH</div><h1>Zhakori Teacher</h1><div class="tag">Free Android voice features · no API key · no paid credits</div></div></header>
 
-<section class="panel"><span class="chip" id="lessonCount">LESSON 1 OF 5</span><h2 style="margin-top:12px">Learn by listening and speaking</h2><p class="muted">This first version uses your Android browser's available speech voice. Voice quality and speech recognition depend on your browser and device. It is not the actual ChatGPT voice service.</p><div class="row"><button class="primary" id="listen">▶ Hear the word</button><button id="say">🎙 Say it aloud</button><button id="slower">🐢 Slower</button></div><div style="margin-top:12px"><label for="voiceSelect" class="muted" style="display:block;margin-bottom:6px">Choose a speaking voice</label><select id="voiceSelect" style="width:100%"><option value="">Loading voices…</option></select><div class="row" style="margin-top:8px"><button id="testVoice">🔉 Test selected voice</button></div><p class="muted small" id="voiceStatus" aria-live="polite">Available voices depend on your phone and browser.</p></div><div id="status" class="feedback" aria-live="polite">Ready when you are.</div></section>
+<section class="panel"><span class="chip" id="lessonCount">LESSON 1 OF 5</span><h2 style="margin-top:12px">Learn by listening and speaking</h2><p class="muted">This first version uses your Android browser's available speech voice. Voice quality and speech recognition depend on your browser and device. It is not the actual ChatGPT voice service.</p><div class="row"><button class="primary" id="listen">▶ Hear the word</button><button id="say">🎙 Say it aloud</button><button id="slower">🐢 Slower</button></div><div style="margin-top:12px"><label for="voiceSelect" class="muted" style="display:block;margin-bottom:6px">Choose a speaking voice</label><select id="voiceSelect" style="width:100%"><option value="">Loading voices…</option></select><div class="row" style="margin-top:8px"><button id="testVoice">🔉 Test selected voice</button><button id="refreshVoices">↻ Refresh voices</button></div><p class="muted small" id="voiceStatus" aria-live="polite">Available voices depend on your phone and browser.</p></div><div id="status" class="feedback" aria-live="polite">Ready when you are.</div></section>
 <section class="panel"><div class="tag">TODAY'S WORD</div><div class="word" id="word">Ena</div><div class="meaning" id="meaning">Friend</div><p class="muted" id="hint">Say: EH-nah</p><div class="progress"><div class="bar" id="bar"></div></div><div class="row"><button id="prev">← Previous</button><button class="primary" id="next">Next word →</button></div></section>
 <section class="panel"><h2>Practice a sentence</h2><div class="word" style="font-size:24px" id="sentence">Zha luma no.</div><p class="muted" id="translation">I see you.</p><div class="row"><button id="sentenceListen" class="primary">🔊 Hear sentence</button><button id="quiz">Quick quiz</button></div><div id="quizArea" style="margin-top:12px"></div></section>
 <section class="panel"><h2>Full dictionary</h2><p class="muted">Search Zhakori words or their English meanings. This dictionary is saved with the app and available offline after the first load.</p><input id="dictSearch" placeholder="Search a word or meaning…" autocomplete="off" style="width:100%;margin-bottom:12px"><div id="dictCount" class="tag"></div><div id="dictResults" style="max-height:360px;overflow:auto;margin-top:10px"></div></section>
@@ -387,10 +387,50 @@ for(const [w,m] of Object.entries(dictionary)){
 let index=0,slow=false;
 const $=id=>document.getElementById(id);
 let chosenVoice=null;
-function loadVoices(){if(!('speechSynthesis'in window)){$('voiceSelect').innerHTML='<option value="">Speech voices unsupported</option>';$('voiceStatus').textContent='This browser does not support spoken voices.';return}const voices=speechSynthesis.getVoices();const select=$('voiceSelect');const previous=select.value;select.innerHTML='';if(!voices.length){select.innerHTML='<option value="">Waiting for device voices…</option>';$('voiceStatus').textContent='No voices loaded yet. Try again in a moment.';return}voices.forEach((v,i)=>{const o=document.createElement('option');o.value=String(i);o.textContent=v.name+' ('+v.lang+')'+(v.default?' — default':'');select.append(o)});let saved='';try{saved=localStorage.getItem('zhakoriVoiceName')||''}catch(e){}let pick=voices.findIndex(v=>v.name===saved);if(pick<0&&previous!=='')pick=Number(previous);if(pick<0||pick>=voices.length)pick=voices.findIndex(v=>v.lang.toLowerCase().startsWith('en'));if(pick<0)pick=0;select.value=String(pick);chosenVoice=voices[pick];$('voiceStatus').textContent=voices.length+' voices available on this device.'}
-function speak(text){if(!('speechSynthesis'in window)){ $('status').textContent='Speech synthesis is not supported in this browser.';return}speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(text);const voices=speechSynthesis.getVoices();const selected=voices[Number($('voiceSelect')?.value)];if(selected){u.voice=selected;u.lang=selected.lang}else{u.lang='en-US'}u.rate=slow?.72:.9;u.pitch=1;u.onstart=()=>{$('status').textContent='Speaking with '+(u.voice?u.voice.name:'device default')+'…'};u.onend=()=>{$('status').textContent='Finished. Your turn!'};speechSynthesis.speak(u)}
+let voiceRetryCount=0;
+let voiceRetryTimer=null;
+function loadVoices(){
+ if(!('speechSynthesis'in window)){
+  $('voiceSelect').innerHTML='<option value="">Speech voices unsupported</option>';
+  $('voiceStatus').textContent='This browser does not support speech voices. Open this app in Chrome.';
+  return;
+ }
+ const voices=speechSynthesis.getVoices();
+ const select=$('voiceSelect');
+ const previous=select.value;
+ if(!voices.length){
+  select.innerHTML='<option value="">No voices detected yet</option>';
+  $('voiceStatus').textContent='Your phone has not supplied voices yet. Tap Refresh voices, or check Android Text-to-speech settings.';
+  if(voiceRetryCount<12 && !voiceRetryTimer){
+   voiceRetryCount++;
+   voiceRetryTimer=setTimeout(()=>{voiceRetryTimer=null;loadVoices()},1000);
+  }
+  return;
+ }
+ voiceRetryCount=0;
+ if(voiceRetryTimer){clearTimeout(voiceRetryTimer);voiceRetryTimer=null}
+ select.innerHTML='';
+ voices.forEach(v=>{
+  const o=document.createElement('option');
+  o.value=v.voiceURI||v.name;
+  o.textContent=v.name+' ('+v.lang+')'+(v.default?' — default':'');
+  select.append(o);
+ });
+ let saved='';
+ try{saved=localStorage.getItem('zhakoriVoiceURI')||localStorage.getItem('zhakoriVoiceName')||''}catch(e){}
+ let pick=voices.find(v=>(v.voiceURI||v.name)===saved||v.name===saved);
+ if(pick && previous) pick=voices.find(v=>(v.voiceURI||v.name)===previous)||pick;
+ if(!pick && previous) pick=voices.find(v=>(v.voiceURI||v.name)===previous);
+ if(!pick) pick=voices.find(v=>v.lang.toLowerCase().startsWith('en'));
+ if(!pick) pick=voices.find(v=>v.default)||voices[0];
+ select.value=pick.voiceURI||pick.name;
+ chosenVoice=pick;
+ $('voiceStatus').textContent=voices.length+' device voices available. Choose one, then tap Test selected voice.';
+}
+function speak(text){if(!('speechSynthesis'in window)){ $('status').textContent='Speech synthesis is not supported in this browser.';return}speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(text);const voices=speechSynthesis.getVoices();const selected=voices.find(v=>(v.voiceURI||v.name)===$('voiceSelect')?.value)||null;if(selected){u.voice=selected;u.lang=selected.lang}else{u.lang='en-US'}u.rate=slow?.72:.9;u.pitch=1;u.onstart=()=>{$('status').textContent='Speaking with '+(u.voice?u.voice.name:'device default')+'…'};u.onend=()=>{$('status').textContent='Finished. Your turn!'};speechSynthesis.speak(u)}
 if('speechSynthesis'in window){speechSynthesis.onvoiceschanged=loadVoices;loadVoices()}
-$('voiceSelect').addEventListener('change',()=>{const voices=speechSynthesis.getVoices();chosenVoice=voices[Number($('voiceSelect').value)]||null;try{localStorage.setItem('zhakoriVoiceName',chosenVoice?chosenVoice.name:'')}catch(e){}$('voiceStatus').textContent=chosenVoice?'Selected: '+chosenVoice.name+' ('+chosenVoice.lang+').':'Using device default voice.';});
+$('refreshVoices').onclick=()=>{voiceRetryCount=0;if(voiceRetryTimer){clearTimeout(voiceRetryTimer);voiceRetryTimer=null}if('speechSynthesis'in window){speechSynthesis.getVoices();loadVoices();setTimeout(loadVoices,500);setTimeout(loadVoices,1500)}};
+$('voiceSelect').addEventListener('change',()=>{const voices=speechSynthesis.getVoices();chosenVoice=voices.find(v=>(v.voiceURI||v.name)===$('voiceSelect').value)||null;try{localStorage.setItem('zhakoriVoiceURI',chosenVoice?(chosenVoice.voiceURI||chosenVoice.name):'');localStorage.setItem('zhakoriVoiceName',chosenVoice?chosenVoice.name:'')}catch(e){}$('voiceStatus').textContent=chosenVoice?'Selected: '+chosenVoice.name+' ('+chosenVoice.lang+'). Tap Test selected voice to hear it.':'No voice selected yet.';});
 $('testVoice').onclick=()=>speak('Hello! I am your Zhakori language teacher. Let us learn together.');
 function render(autoSpeak=true){const l=lessons[index];$('lessonCount').textContent='LESSON '+(index+1)+' OF '+lessons.length;$('word').textContent=l.w;$('meaning').textContent=l.m;$('hint').textContent='Pronunciation guide: '+l.h;$('sentence').textContent=l.s;$('translation').textContent=l.t;$('bar').style.width=((index+1)/lessons.length*100)+'%';$('quizArea').innerHTML='';if($('lunaLine'))$('lunaLine').textContent='Today’s word is “'+l.w+'” — '+l.m+'. Listen: “'+l.s+'” ('+l.t+')';if(autoSpeak){speak('Luna says: '+l.w+'. '+l.s)}}
 $('listen').onclick=()=>speak(lessons[index].w);$('sentenceListen').onclick=()=>speak(lessons[index].s);$('slower').onclick=()=>{slow=!slow;$('slower').textContent=slow?'🐢 Slow mode: ON':'🐢 Slower';speak(lessons[index].w)};$('next').onclick=()=>{index=(index+1)%lessons.length;render(true)};$('prev').onclick=()=>{index=(index-1+lessons.length)%lessons.length;render(true)};
