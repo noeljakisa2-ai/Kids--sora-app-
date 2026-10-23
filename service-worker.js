@@ -1,5 +1,11 @@
-const CACHE_NAME = 'zhakori-offline-v8';
-const APP_FILES = ['/', '/index.html', '/zhakori-teacher.html', '/manifest.json'];
+const CACHE_NAME = 'zhakori-offline-v9';
+const BASE = self.registration.scope;
+const APP_FILES = [
+  new URL('./', BASE).href,
+  new URL('./index.html', BASE).href,
+  new URL('./zhakori-teacher.html', BASE).href,
+  new URL('./manifest.json', BASE).href
+];
 self.addEventListener('install', event => {
   event.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll(APP_FILES)).then(() => self.skipWaiting()));
 });
@@ -11,5 +17,5 @@ self.addEventListener('fetch', event => {
   event.respondWith(caches.match(event.request).then(cached => cached || fetch(event.request).then(response => {
     if (response.ok) { const copy = response.clone(); caches.open(CACHE_NAME).then(cache => cache.put(event.request, copy)); }
     return response;
-  }).catch(() => caches.match('/index.html'))));
+  }).catch(() => caches.match(new URL('./index.html', BASE).href))));
 });
