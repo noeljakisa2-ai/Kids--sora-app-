@@ -36,7 +36,7 @@ const today=new Date().toISOString().slice(0,10);
 if(saved.lastDay!==today){const yesterday=new Date(Date.now()-86400000).toISOString().slice(0,10);saved.streak=saved.lastDay===yesterday?(saved.streak||0)+1:1;saved.lastDay=today;saveProgress();}
 function saveProgress(){try{localStorage.setItem(progressKey,JSON.stringify(saved));}catch(e){};updateStats();}
 function updateStats(){$('xp').textContent=saved.xp||0;$('streak').textContent=saved.streak||0;$('hearts').textContent='❤️'.repeat(hearts)+'♡'.repeat(3-hearts);$('pathline').innerHTML=lessons.map((l,i)=>'<div class="pathnode '+(saved.completed.includes(i)?'done':i===index?'active':'')+'" data-i="'+i+'"><b>'+(saved.completed.includes(i)?'⭐':i+1)+'</b>'+l.w+'</div>').join('');[...$('pathline').querySelectorAll('.pathnode')].forEach(n=>n.onclick=()=>{index=Number(n.dataset.i);render(true);});}
-function speak(text){if(!('speechSynthesis'in window)){ $('status').textContent='Speech synthesis is not supported in this browser.';return}speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(text);u.lang='en-US';u.rate=slow?.72:.9;u.pitch=1;u.onstart=()=>{$('status').textContent='Speaking…'};u.onend=()=>{$('status').textContent='Finished. Your turn!'};speechSynthesis.speak(u)}
+let zhakoriOneVoice=null;function getOneVoice(){if(zhakoriOneVoice)return zhakoriOneVoice;const vs=speechSynthesis.getVoices();zhakoriOneVoice=vs.find(v=>v.lang&&v.lang.toLowerCase()==='en-us')||vs.find(v=>v.lang&&v.lang.toLowerCase().startsWith('en'))||vs[0]||null;return zhakoriOneVoice}function speak(text){if(!('speechSynthesis'in window)){ $('status').textContent='Speech synthesis is not supported in this browser.';return}speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(text);const v=getOneVoice();if(v){u.voice=v;u.lang=v.lang;}else u.lang='en-US';u.rate=slow?.72:.9;u.pitch=1;u.onstart=()=>{$('status').textContent='Speaking…'};u.onend=()=>{$('status').textContent='Finished. Your turn!'};speechSynthesis.speak(u)}
 function render(autoSpeak=false){quizAnswered=false;const l=lessons[index];$('lessonCount').textContent='LESSON '+(index+1)+' OF '+lessons.length;$('word').textContent=l.w;$('meaning').textContent=l.m;$('hint').textContent='Pronunciation guide: '+l.h;$('sentence').textContent=l.s;$('translation').textContent=l.t;$('bar').style.width=((index+1)/lessons.length*100)+'%';$('quizArea').innerHTML='';if(autoSpeak)speak(l.w)}
 $('listen').onclick=()=>speak(lessons[index].w);$('sentenceListen').onclick=()=>speak(lessons[index].s);$('slower').onclick=()=>{slow=!slow;$('slower').textContent=slow?'🐢 Slow mode: ON':'🐢 Slower';speak(lessons[index].w)};$('next').onclick=()=>{index=(index+1)%lessons.length;render(true)};$('prev').onclick=()=>{index=(index-1+lessons.length)%lessons.length;render(true)};
 $('say').onclick=()=>{const SR=window.SpeechRecognition||window.webkitSpeechRecognition;if(!SR){$('status').textContent='Speech recognition is not available here. Try Chrome on Android; you can still listen and practice manually.';return}const rec=new SR();rec.lang='en-US';rec.interimResults=false;rec.maxAlternatives=1;$('status').textContent='Listening… speak now.';rec.onresult=e=>{const said=e.results[0][0].transcript.toLowerCase();const target=lessons[index].w.toLowerCase();$('status').textContent='I heard: “'+said+'”. '+(said.includes(target)?'Nice work!':'Try once more, slowly.');};rec.onerror=e=>$('status').textContent='Microphone recognition issue ('+e.error+'). Check permission or try Chrome.';rec.start()};
@@ -97,30 +97,17 @@ const MULTI_LOCALES={lg:'lg-UG',sw:'sw-KE',fr:'fr-FR',es:'es-ES',ja:'ja-JP',zh:'
 let multiIndex=0,multiLastSpeech='',multiLastLang='en';const multi$=id=>document.getElementById(id);
 function multiSpeak(t,l){
  const status=multi$('multiPronunciation');
- if(!('speechSynthesis' in window)||!('SpeechSynthesisUtterance' in window)){status.textContent='This installed app view does not support speech audio. Open Zhakori Teacher in Chrome to hear phrases.';return;}
- const synth=window.speechSynthesis,loc=MULTI_LOCALES[l]||'en-US',lang=loc.slice(0,2).toLowerCase();
+ if(!('speechSynthesis' in window)||!('SpeechSynthesisUtterance' in window)){status.textContent='Speech audio is not supported here. Open Zhakori Teacher in Chrome.';return;}
+ const synth=window.speechSynthesis;
  synth.cancel();
- let done=false,timer=null;
- const cleanup=()=>{if(timer)clearTimeout(timer);synth.removeEventListener?.('voiceschanged',onChanged);if(synth.onvoiceschanged===onChanged)synth.onvoiceschanged=null;};
- const speakNow=(allowDefault)=>{
-  if(done)return;
-  const voices=synth.getVoices();
-  const voice=voices.find(v=>v.lang&&v.lang.toLowerCase().startsWith(lang));
-  if(!voice&&!allowDefault)return;
-  done=true;cleanup();
-  const u=new SpeechSynthesisUtterance(t);u.rate=.82;
-  if(voice){u.voice=voice;u.lang=voice.lang;}else{u.lang=loc;status.textContent='Trying your phone’s default voice for '+MULTI_LANGS[l]+'…';}
-  u.onstart=()=>status.textContent='Speaking '+MULTI_LANGS[l]+'…';
-  u.onend=()=>status.textContent='Finished speaking · '+MULTI_LANGS[l];
-  u.onerror=()=>status.textContent='Phone audio failed. Open this page in Chrome and check Android Settings → Text-to-speech output.';
-  synth.speak(u);multiLastSpeech=t;multiLastLang=l;
- };
- const onChanged=()=>{if(synth.getVoices().length)speakNow(false);};
- status.textContent='Checking phone audio…';
- const initial=synth.getVoices();
- if(initial.length){speakNow(false);if(!done){status.textContent='No '+MULTI_LANGS[l]+' voice installed; trying the default phone voice.';speakNow(true);}return;}
- synth.addEventListener?.('voiceschanged',onChanged);synth.onvoiceschanged=onChanged;
- timer=setTimeout(()=>{if(done)return;if(synth.getVoices().length){speakNow(false);if(!done)speakNow(true);}else speakNow(true);},900);
+ const voice=getOneVoice();
+ const u=new SpeechSynthesisUtterance(t);
+ if(voice){u.voice=voice;u.lang=voice.lang;}else u.lang='en-US';
+ u.rate=.82;u.pitch=1;
+ u.onstart=()=>status.textContent='Speaking with the same voice · '+MULTI_LANGS[l];
+ u.onend=()=>status.textContent='Finished speaking · '+MULTI_LANGS[l];
+ u.onerror=()=>status.textContent='Phone audio failed. Check Android Text-to-speech settings.';
+ synth.speak(u);multiLastSpeech=t;multiLastLang=l;
 }
 function multiRender(){const l=multi$('learnLanguage').value,p=MULTI_PHRASES[multiIndex];multi$('multiLessonCount').textContent='Lesson '+(multiIndex+1)+' of '+MULTI_PHRASES.length;multi$('multiPhrase').textContent=p[l];multi$('multiEnglish').textContent='English: '+p.en;multi$('multiPronunciation').textContent=MULTI_LANGS[l]+' · built-in phrase';multi$('multiProgress').style.width=((multiIndex+1)/MULTI_PHRASES.length*100)+'%'}
 function multiNorm(s){return s.trim().toLocaleLowerCase().replace(/[.!?？。！、,]/g,'').replace(/\s+/g,' ')}
