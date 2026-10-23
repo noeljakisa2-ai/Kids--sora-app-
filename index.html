@@ -2,11 +2,11 @@
 <html lang="en">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="theme-color" content="#10172b"><title>Zhakori AI Voice Teacher</title>
+<meta name="theme-color" content="#58cc02"><title>Zhakori AI Voice Teacher</title>
 <style>
 :root{color-scheme:light;--bg:#f7fbe9;--panel:#ffffff;--accent:#58cc02;--accent-dark:#46a302;--text:#263b28;--muted:#60745f;--line:#d8e8cb;--mint:#e5f7d7;--yellow:#ffc800}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:16px system-ui,sans-serif;min-height:100vh}.wrap{max-width:760px;margin:auto;padding:20px}.top{display:flex;align-items:center;gap:12px}.logo{font-size:34px}.tag{color:var(--muted);font-size:13px}.panel{background:var(--panel);border:1px solid var(--line);border-radius:20px;padding:18px;margin-top:16px;box-shadow:0 12px 35px #0003}h1{font-size:clamp(27px,6vw,40px);margin:0}h2{font-size:20px;margin:0 0 10px}.muted{color:var(--muted);line-height:1.5}.row{display:flex;gap:10px;flex-wrap:wrap}button,select{font:inherit;border:1px solid var(--line);border-radius:14px;padding:12px 15px;background:#edf8e5;color:var(--text);font-weight:700}button.primary{background:var(--accent);color:#ffffff;border:0;box-shadow:0 4px 0 var(--accent-dark)}button:active{transform:scale(.98)}.word{font-size:34px;font-weight:850;letter-spacing:1px}.meaning{font-size:18px}.chip{display:inline-block;padding:5px 9px;border-radius:999px;background:var(--mint);color:var(--accent-dark);font-size:12px}.progress{height:8px;background:#e2ebd8;border-radius:9px;overflow:hidden;margin:12px 0}.bar{height:100%;background:var(--accent);width:0}.feedback{min-height:28px;margin-top:10px;color:#c7f7d7}.small{font-size:12px}.footer{padding:18px 0;color:var(--muted);font-size:12px}input{font:inherit;min-width:0;flex:1;background:#ffffff;color:var(--text);border:1px solid var(--line);border-radius:12px;padding:12px}.luna-bubble{font-size:14px}}
 </style>
-<link rel="manifest" href="/manifest.json"><meta name="theme-color" content="#10172b"></head>
+<link rel="manifest" href="./manifest.json"><meta name="theme-color" content="#58cc02"></head>
 <body><main class="wrap">
 <header class="top"><div class="logo">🔊</div><div><div class="tag">YOUR PERSONAL LANGUAGE COACH</div><h1>Zhakori Teacher</h1><div class="tag">Free Android voice features · no API key · no paid credits</div></div></header>
 
@@ -15,6 +15,7 @@
 <section class="panel"><h2>Practice a sentence</h2><div class="word" style="font-size:24px" id="sentence">Zha luma no.</div><p class="muted" id="translation">I see you.</p><div class="row"><button id="sentenceListen" class="primary">🔊 Hear sentence</button><button id="quiz">Quick quiz</button></div><div id="quizArea" style="margin-top:12px"></div></section>
 <section class="panel"><h2>Full dictionary</h2><p class="muted">Search Zhakori words or their English meanings. This dictionary is saved with the app and available offline after the first load.</p><input id="dictSearch" placeholder="Search a word or meaning…" autocomplete="off" style="width:100%;margin-bottom:12px"><div id="dictCount" class="tag"></div><div id="dictResults" style="max-height:360px;overflow:auto;margin-top:10px"></div></section>
 <section class="panel"><h2>Ask your tutor</h2><p class="muted">Ask about one of the saved Zhakori words. This offline starter can answer from its small dictionary; it does not connect to a live AI model.</p><form id="askForm" class="row"><input id="question" placeholder="e.g. What does shavi mean?" autocomplete="off"><button class="primary">Ask</button></form><div id="answer" class="feedback" aria-live="polite"></div></section>
+<section class="panel" id="multiLanguageStudio"><h2>🌍 Multilingual Language Studio</h2><p class="muted">Learn Luganda, Swahili, French, Spanish, Japanese, and Chinese. Lessons and phrase matching are built in for offline use after the first load.</p><label for="learnLanguage">Language to learn</label><select id="learnLanguage" style="width:100%;margin:8px 0"><option value="lg">Luganda</option><option value="sw">Swahili</option><option value="fr">French</option><option value="es">Spanish</option><option value="ja">Japanese</option><option value="zh">Chinese (Mandarin)</option></select><div class="chip" id="multiLessonCount">Lesson 1</div><div class="word" id="multiPhrase" style="margin-top:8px">Oli otya?</div><p class="meaning" id="multiEnglish">How are you?</p><p class="muted" id="multiPronunciation">Use Hear phrase to listen.</p><div class="row"><button class="primary" id="multiHear">🔊 Hear phrase</button><button id="multiPrev">← Previous</button><button id="multiNext">Next →</button></div><div class="progress"><div class="bar" id="multiProgress"></div></div><h3>🔁 Translate between languages</h3><label for="multiSource">From</label><select id="multiSource" style="width:100%;margin:6px 0"><option value="lg">Luganda</option><option value="sw">Swahili</option><option value="fr">French</option><option value="es">Spanish</option><option value="ja">Japanese</option><option value="zh">Chinese</option><option value="en">English</option></select><label for="multiTarget">To</label><select id="multiTarget" style="width:100%;margin:6px 0"><option value="en">English</option><option value="lg">Luganda</option><option value="sw">Swahili</option><option value="fr">French</option><option value="es">Spanish</option><option value="ja">Japanese</option><option value="zh">Chinese</option></select><input id="multiInput" placeholder="Type a phrase from the lesson pack" autocomplete="off" style="width:100%;margin:8px 0"><div class="row"><button class="primary" id="multiTranslate">Translate offline</button><button id="multiHearTranslation">🔊 Hear translation</button></div><p id="multiOutput" class="meaning" aria-live="polite">Try one of the built-in lesson phrases.</p><p class="muted small">Curated phrasebook, not an unrestricted translator. Speech depends on voices installed on your phone; Japanese and Chinese voices may need downloading in Android Text-to-speech settings.</p></section>
 <div class="footer">Zhakori is a developing constructed language. These are the project's current proposed words and grammar. Use a modern browser and allow microphone permission for speaking practice.</div>
 </main>
 <script>
@@ -476,5 +477,34 @@ function renderDictionary(){
 $('dictSearch').addEventListener('input',renderDictionary);
 
 render();renderDictionary();
-if('serviceWorker' in navigator && location.protocol.startsWith('http')){window.addEventListener('load',()=>navigator.serviceWorker.register('/service-worker.js').catch(()=>{}));}
+const MULTI_LANGS={lg:'Luganda',sw:'Swahili',fr:'French',es:'Spanish',ja:'Japanese',zh:'Chinese',en:'English'};
+const MULTI_PHRASES=[
+{en:'Hello',lg:'Gyebale',sw:'Hujambo',fr:'Bonjour',es:'Hola',ja:'こんにちは',zh:'你好'},
+{en:'How are you?',lg:'Oli otya?',sw:'Habari gani?',fr:'Comment ça va ?',es:'¿Cómo estás?',ja:'お元気ですか？',zh:'你好吗？'},
+{en:'I am fine',lg:'Gyendi bulungi',sw:'Niko vizuri',fr:'Je vais bien',es:'Estoy bien',ja:'元気です',zh:'我很好'},
+{en:'Thank you',lg:'Weebale',sw:'Asante',fr:'Merci',es:'Gracias',ja:'ありがとう',zh:'谢谢'},
+{en:'Please',lg:'Mwattu',sw:'Tafadhali',fr:'S’il vous plaît',es:'Por favor',ja:'お願いします',zh:'请'},
+{en:'Goodbye',lg:'Weeraba',sw:'Kwaheri',fr:'Au revoir',es:'Adiós',ja:'さようなら',zh:'再见'},
+{en:'Good morning',lg:'Wasuze otya?',sw:'Habari za asubuhi',fr:'Bonjour',es:'Buenos días',ja:'おはようございます',zh:'早上好'},
+{en:'Good night',lg:'Sula bulungi',sw:'Usiku mwema',fr:'Bonne nuit',es:'Buenas noches',ja:'おやすみなさい',zh:'晚安'},
+{en:'My name is…',lg:'Erinnya lyange nze…',sw:'Jina langu ni…',fr:'Je m’appelle…',es:'Me llamo…',ja:'私の名前は…です',zh:'我的名字是…'},
+{en:'I do not understand',lg:'Sitegeera',sw:'Sielewi',fr:'Je ne comprends pas',es:'No entiendo',ja:'わかりません',zh:'我不明白'},
+{en:'Help me',lg:'Nyamba',sw:'Nisaidie',fr:'Aidez-moi',es:'Ayúdame',ja:'助けてください',zh:'请帮帮我'},
+{en:'Water',lg:'Amazzi',sw:'Maji',fr:'Eau',es:'Agua',ja:'水',zh:'水'},
+{en:'Food',lg:'Emmere',sw:'Chakula',fr:'Nourriture',es:'Comida',ja:'食べ物',zh:'食物'},
+{en:'Yes',lg:'Yee',sw:'Ndiyo',fr:'Oui',es:'Sí',ja:'はい',zh:'是'},
+{en:'No',lg:'Nedda',sw:'Hapana',fr:'Non',es:'No',ja:'いいえ',zh:'不是'},
+{en:'Where is the bathroom?',lg:'Ekinaabiro kiri ludda wa?',sw:'Choo kiko wapi?',fr:'Où sont les toilettes ?',es:'¿Dónde está el baño?',ja:'トイレはどこですか？',zh:'洗手间在哪里？'},
+{en:'How much is this?',lg:'Kino kya ssente mmeka?',sw:'Hii ni bei gani?',fr:'Combien ça coûte ?',es:'¿Cuánto cuesta esto?',ja:'これはいくらですか？',zh:'这个多少钱？'},
+{en:'I love you',lg:'Nkwagala',sw:'Nakupenda',fr:'Je t’aime',es:'Te quiero',ja:'愛しています',zh:'我爱你'},
+{en:'See you later',lg:'Tulabagane oluvannyuma',sw:'Tutaonana baadaye',fr:'À plus tard',es:'Hasta luego',ja:'また後で',zh:'回头见'}
+];
+const MULTI_LOCALES={lg:'lg-UG',sw:'sw-KE',fr:'fr-FR',es:'es-ES',ja:'ja-JP',zh:'zh-CN',en:'en-US'};
+let multiIndex=0,multiLastSpeech='',multiLastLang='en';const multi$=id=>document.getElementById(id);
+function multiSpeak(t,l){if(!('speechSynthesis'in window)){multi$('multiOutput').textContent='Speech is not supported in this browser.';return}const loc=MULTI_LOCALES[l]||'en-US';const v=speechSynthesis.getVoices().find(x=>x.lang.toLowerCase().startsWith(loc.slice(0,2)));speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t);u.lang=loc;if(v)u.voice=v;u.rate=.88;u.onerror=()=>{multi$('multiPronunciation').textContent='No matching voice installed. Check Android Text-to-speech settings.'};speechSynthesis.speak(u);multiLastSpeech=t;multiLastLang=l}
+function multiRender(){const l=multi$('learnLanguage').value,p=MULTI_PHRASES[multiIndex];multi$('multiLessonCount').textContent='Lesson '+(multiIndex+1)+' of '+MULTI_PHRASES.length;multi$('multiPhrase').textContent=p[l];multi$('multiEnglish').textContent='English: '+p.en;multi$('multiPronunciation').textContent=MULTI_LANGS[l]+' · built-in phrase';multi$('multiProgress').style.width=((multiIndex+1)/MULTI_PHRASES.length*100)+'%'}
+function multiNorm(s){return s.trim().toLocaleLowerCase().replace(/[.!?？。！、,]/g,'').replace(/\s+/g,' ')}
+multi$('learnLanguage').onchange=multiRender;multi$('multiPrev').onclick=()=>{multiIndex=(multiIndex+MULTI_PHRASES.length-1)%MULTI_PHRASES.length;multiRender()};multi$('multiNext').onclick=()=>{multiIndex=(multiIndex+1)%MULTI_PHRASES.length;multiRender()};multi$('multiHear').onclick=()=>multiSpeak(MULTI_PHRASES[multiIndex][multi$('learnLanguage').value],multi$('learnLanguage').value);
+multi$('multiTranslate').onclick=()=>{const s=multi$('multiSource').value,t=multi$('multiTarget').value,q=multiNorm(multi$('multiInput').value);if(!q){multi$('multiOutput').textContent='Type a phrase first.';return}const p=MULTI_PHRASES.find(x=>multiNorm(x[s])===q);if(!p){multi$('multiOutput').textContent='Not in the offline phrasebook yet. Try a lesson phrase.';return}multi$('multiOutput').textContent=MULTI_LANGS[t]+': '+p[t]+' · English: '+p.en;multiLastSpeech=p[t];multiLastLang=t};multi$('multiHearTranslation').onclick=()=>{if(!multiLastSpeech){multi$('multiOutput').textContent='Translate a phrase first.';return}multiSpeak(multiLastSpeech,multiLastLang)};multiRender();
+if('serviceWorker' in navigator && location.protocol.startsWith('http')){window.addEventListener('load',()=>navigator.serviceWorker.register('./service-worker.js').catch(()=>{}));}
 </script></body></html>
