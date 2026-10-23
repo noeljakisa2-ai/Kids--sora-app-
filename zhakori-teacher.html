@@ -39,7 +39,35 @@ function speak(text){if(!('speechSynthesis'in window)){ $('status').textContent=
 function render(autoSpeak=false){quizAnswered=false;const l=lessons[index];$('lessonCount').textContent='LESSON '+(index+1)+' OF '+lessons.length;$('word').textContent=l.w;$('meaning').textContent=l.m;$('hint').textContent='Pronunciation guide: '+l.h;$('sentence').textContent=l.s;$('translation').textContent=l.t;$('bar').style.width=((index+1)/lessons.length*100)+'%';$('quizArea').innerHTML='';if(autoSpeak)speak(l.w)}
 $('listen').onclick=()=>speak(lessons[index].w);$('sentenceListen').onclick=()=>speak(lessons[index].s);$('slower').onclick=()=>{slow=!slow;$('slower').textContent=slow?'🐢 Slow mode: ON':'🐢 Slower';speak(lessons[index].w)};$('next').onclick=()=>{index=(index+1)%lessons.length;render(true)};$('prev').onclick=()=>{index=(index-1+lessons.length)%lessons.length;render(true)};
 $('say').onclick=()=>{const SR=window.SpeechRecognition||window.webkitSpeechRecognition;if(!SR){$('status').textContent='Speech recognition is not available here. Try Chrome on Android; you can still listen and practice manually.';return}const rec=new SR();rec.lang='en-US';rec.interimResults=false;rec.maxAlternatives=1;$('status').textContent='Listening… speak now.';rec.onresult=e=>{const said=e.results[0][0].transcript.toLowerCase();const target=lessons[index].w.toLowerCase();$('status').textContent='I heard: “'+said+'”. '+(said.includes(target)?'Nice work!':'Try once more, slowly.');};rec.onerror=e=>$('status').textContent='Microphone recognition issue ('+e.error+'). Check permission or try Chrome.';rec.start()};
-$('quiz').onclick=()=>{const l=lessons[index];quizAnswered=false;$('quizArea').innerHTML='<p>What does <b>'+l.w+'</b> mean?</p><div class="row"><button data-a="'+l.m+'">'+l.m+'</button><button data-a="Mountain">Mountain</button><button data-a="Sleep">Sleep</button></div><div class="feedback" id="quizFeedback"></div>';[...$('quizArea').querySelectorAll('button')].forEach(b=>b.onclick=()=>{if(quizAnswered)return;quizAnswered=true;if(b.dataset.a===l.m){$('quizFeedback').textContent='Correct! +10 XP. Great job!';if(!saved.completed.includes(index)){saved.completed.push(index);saved.xp=(saved.xp||0)+10;saveProgress();}else{$('quizFeedback').textContent='Correct! You already earned XP for this lesson. Keep practising!';}}else{hearts=Math.max(0,hearts-1);$('quizFeedback').textContent='Not quite. It means '+l.m+'. Try again after reviewing the word.';updateStats();} });};
+let activeQuiz=[],quizPos=0,quizScore=0,quizLocked=false;
+function shuffle(items){return [...items].sort(()=>Math.random()-.5)}
+function startQuiz(){
+ const pool=Object.entries(dictionary).filter(([w,m],i,arr)=>w&&m&&arr.findIndex(([w2])=>w2.toLowerCase()===w.toLowerCase())===i);
+ if(pool.length<4){$('quizArea').textContent='Add more dictionary words to create a quiz.';return}
+ activeQuiz=shuffle(pool).slice(0,Math.min(10,pool.length)).map(([w,m])=>({w,m,reverse:Math.random()<.45}));
+ quizPos=0;quizScore=0;showQuizQuestion();
+}
+function showQuizQuestion(){
+ quizLocked=false;
+ if(quizPos>=activeQuiz.length){
+  const passed=quizScore>=Math.ceil(activeQuiz.length*.8);
+  $('quizArea').innerHTML='<h3>Quiz result: '+quizScore+'/'+activeQuiz.length+'</h3><p class="feedback">'+(passed?'🎉 Passed! You need 80% to pass.':'Not passed yet. You need 80% to pass. Review the words and try again.')+'</p><p class="muted">'+(passed?'Great work — keep practising to remember them.':'Try a different set of words. The questions will be shuffled.')+'</p><button class="primary" id="retryQuiz">Try another 10-question quiz</button>';
+  $('retryQuiz').onclick=startQuiz;return;
+ }
+ const q=activeQuiz[quizPos],correct=q.reverse?q.w:q.m;
+ const distractors=shuffle(Object.entries(dictionary).filter(([w,m])=>q.reverse?(w!==q.w&&m!==q.m):(m!==q.m&&w!==q.w)).map(([w,m])=>q.reverse?w:m));
+ const opts=shuffle([correct,...distractors.slice(0,3)]);
+ $('quizArea').innerHTML='<div class="chip">QUESTION '+(quizPos+1)+' OF '+activeQuiz.length+'</div><div class="progress"><div class="bar" style="width:'+((quizPos)/activeQuiz.length*100)+'%"></div></div><p><b>'+(q.reverse?'Which Zhakori word means “'+q.m+'”?':'What does “'+q.w+'” mean?')+'</b></p><div class="row" id="quizOptions"></div><div class="feedback" id="quizFeedback" aria-live="polite"></div>';
+ const box=$('quizOptions');
+ opts.forEach(opt=>{const btn=document.createElement('button');btn.textContent=opt;btn.onclick=()=>{
+  if(quizLocked)return;quizLocked=true;
+  if(opt===correct){quizScore++;$('quizFeedback').textContent='Correct.';}
+  else $('quizFeedback').textContent='Not quite. The correct answer is '+correct+'.';
+  [...box.querySelectorAll('button')].forEach(x=>{x.disabled=true;if(x.textContent===correct)x.style.border='2px solid #28a66a';});
+  const next=document.createElement('button');next.className='primary';next.textContent=quizPos===activeQuiz.length-1?'See result':'Next question →';next.onclick=()=>{quizPos++;showQuizQuestion()};$('quizArea').append(next);
+ };box.append(btn)});
+}
+$('quiz').onclick=startQuiz;
 $('askForm').onsubmit=e=>{e.preventDefault();const q=$('question').value.trim().toLowerCase();if(!q)return;let found=Object.entries(dictionary).find(([w,m])=>q.includes(w)||q.includes(m.toLowerCase()));$('answer').textContent=found?found[0].toUpperCase()+' means “'+found[1]+'” in our current Zhakori dictionary.':'I do not know that yet in this starter tutor. Try asking about zha, ena, mira, shavi, or veki.'};
 render();updateStats();
 if('serviceWorker' in navigator && location.protocol.startsWith('http')){window.addEventListener('load',()=>navigator.serviceWorker.register('/service-worker.js').catch(()=>{}));}
