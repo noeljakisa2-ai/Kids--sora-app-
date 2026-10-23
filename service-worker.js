@@ -1,4 +1,4 @@
-const CACHE_NAME = 'zhakori-offline-v4';
+const CACHE_NAME = 'zhakori-offline-v5';
 const APP_FILES = ['/', '/index.html', '/zhakori-teacher.html', '/manifest.json'];
 self.addEventListener('install', event => {
   event.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll(APP_FILES)).then(() => self.skipWaiting()));
