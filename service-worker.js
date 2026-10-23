@@ -1,4 +1,4 @@
-const CACHE_NAME = 'zhakori-offline-v10';
+const CACHE_NAME = 'zhakori-offline-v11';
 const BASE = self.registration.scope;
 const APP_FILES = [new URL('./',BASE).href,new URL('./index.html',BASE).href,new URL('./zhakori-teacher.html',BASE).href,new URL('./manifest.json',BASE).href];
 self.addEventListener('install',e=>e.waitUntil(caches.open(CACHE_NAME).then(c=>c.addAll(APP_FILES)).then(()=>self.skipWaiting())));
