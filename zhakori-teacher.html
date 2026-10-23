@@ -95,7 +95,31 @@ const MULTI_PHRASES=[
 ];
 const MULTI_LOCALES={lg:'lg-UG',sw:'sw-KE',fr:'fr-FR',es:'es-ES',ja:'ja-JP',zh:'zh-CN',en:'en-US'};
 let multiIndex=0,multiLastSpeech='',multiLastLang='en';const multi$=id=>document.getElementById(id);
-function multiSpeak(t,l){if(!('speechSynthesis'in window)){multi$('multiOutput').textContent='Speech is not supported in this browser.';return}const loc=MULTI_LOCALES[l]||'en-US';const v=speechSynthesis.getVoices().find(x=>x.lang.toLowerCase().startsWith(loc.slice(0,2)));speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t);u.lang=loc;if(v)u.voice=v;u.rate=.88;u.onerror=()=>{multi$('multiPronunciation').textContent='No matching voice installed. Check Android Text-to-speech settings.'};speechSynthesis.speak(u);multiLastSpeech=t;multiLastLang=l}
+function multiSpeak(t,l){
+ const status=multi$('multiPronunciation');
+ if(!('speechSynthesis' in window)||!('SpeechSynthesisUtterance' in window)){status.textContent='Audio is not supported in this app view. Open this page in Chrome.';return;}
+ const loc=MULTI_LOCALES[l]||'en-US', lang=loc.slice(0,2).toLowerCase();
+ const speakWithVoice=()=>{
+  const voices=window.speechSynthesis.getVoices();
+  const voice=voices.find(v=>v.lang&&v.lang.toLowerCase().startsWith(lang));
+  if(!voice){status.textContent='No '+MULTI_LANGS[l]+' voice found on your phone. Install that language in Android Settings → Text-to-speech output, then reopen this page.';return;}
+  window.speechSynthesis.cancel();
+  const utterance=new SpeechSynthesisUtterance(t);
+  utterance.voice=voice;utterance.lang=voice.lang;utterance.rate=.82;
+  utterance.onstart=()=>status.textContent='Speaking '+MULTI_LANGS[l]+'…';
+  utterance.onend=()=>status.textContent='Finished speaking · '+MULTI_LANGS[l];
+  utterance.onerror=()=>status.textContent='Audio failed. Open this page in Chrome and check Android Text-to-speech settings.';
+  window.speechSynthesis.speak(utterance);multiLastSpeech=t;multiLastLang=l;
+ };
+ let voices=window.speechSynthesis.getVoices();
+ if(voices.length){speakWithVoice();return;}
+ status.textContent='Waiting for phone voices…';
+ let finished=false;
+ const onChanged=()=>{if(finished)return;const available=window.speechSynthesis.getVoices();if(available.length){finished=true;window.speechSynthesis.removeEventListener?.('voiceschanged',onChanged);speakWithVoice();}};
+ window.speechSynthesis.addEventListener?.('voiceschanged',onChanged);
+ window.speechSynthesis.onvoiceschanged=onChanged;
+ window.setTimeout(()=>{if(finished)return;finished=true;window.speechSynthesis.onvoiceschanged=null;const available=window.speechSynthesis.getVoices();if(available.length)speakWithVoice();else status.textContent='Phone voices did not load. Open in Chrome, then install/check Android Text-to-speech voices in Settings.';},2500);
+}
 function multiRender(){const l=multi$('learnLanguage').value,p=MULTI_PHRASES[multiIndex];multi$('multiLessonCount').textContent='Lesson '+(multiIndex+1)+' of '+MULTI_PHRASES.length;multi$('multiPhrase').textContent=p[l];multi$('multiEnglish').textContent='English: '+p.en;multi$('multiPronunciation').textContent=MULTI_LANGS[l]+' · built-in phrase';multi$('multiProgress').style.width=((multiIndex+1)/MULTI_PHRASES.length*100)+'%'}
 function multiNorm(s){return s.trim().toLocaleLowerCase().replace(/[.!?？。！、,]/g,'').replace(/\s+/g,' ')}
 multi$('learnLanguage').onchange=multiRender;multi$('multiPrev').onclick=()=>{multiIndex=(multiIndex+MULTI_PHRASES.length-1)%MULTI_PHRASES.length;multiRender()};multi$('multiNext').onclick=()=>{multiIndex=(multiIndex+1)%MULTI_PHRASES.length;multiRender()};multi$('multiHear').onclick=()=>multiSpeak(MULTI_PHRASES[multiIndex][multi$('learnLanguage').value],multi$('learnLanguage').value);
