@@ -1,0 +1,12 @@
+{
+  "name": "Village Hero: Wildwood",
+  "short_name": "Village Hero",
+  "description": "Explore Wildwood, fight slimes and bosses, and collect legendary weapons.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "landscape",
+  "background_color": "#1a3032",
+  "theme_color": "#183337",
+  "icons": []
+}
